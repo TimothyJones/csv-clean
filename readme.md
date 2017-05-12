@@ -7,6 +7,17 @@ csv-clean
 It assumes the input is UTF-8 and lines are terminated with `\n` characters. 
 Behaviour on non-UTF-8 input is undefined.
 
+It reads from standard input and writes to standard output
+
+Usage: 
+
+    cat <malformed.csv> | csv-clean > <clean.csv>
+
+Installation:
+
+    go get github.com/TimothyJones/csv-check
+
+
 A general description of the RFC 4180 format is:
 
 * fields may be quoted in `"` characters
