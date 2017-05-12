@@ -61,7 +61,6 @@ func (c *CSVCleaner) finish(dst []byte) error {
 	if c.dstpos+writeLen > len(dst) {
 		writeLen = len(dst) - c.dstpos
 	}
-	//	//log.Println("[ ] Decided to write", writeLen, "bytes", c.dstpos, len(dst), c.keepWritingFrom, len(c.buf))
 
 	if c.addQuote {
 		dst[c.dstpos] = '"'
@@ -72,8 +71,7 @@ func (c *CSVCleaner) finish(dst []byte) error {
 	copy(dst[c.dstpos:], c.buf[c.keepWritingFrom:c.keepWritingFrom+writeLen])
 	c.dstpos += writeLen
 	if c.keepWritingFrom+writeLen == c.bufpos {
-		// We wrote everything
-		//		log.Println("[ ] Finished an entry")
+		// We wrote everything so we can start again
 		c.startBuf()
 		return nil
 	}
@@ -100,7 +98,6 @@ func (c *CSVCleaner) correct(b byte) {
 
 // Transform transforms the incoming byte slice into the output slice.
 // It fulfils the contract described on transform.Transformer.
-//
 func (c *CSVCleaner) Transform(dst, src []byte, atEOF bool) (int, int, error) {
 	c.dstpos = 0
 
@@ -185,7 +182,6 @@ func (c *CSVCleaner) Transform(dst, src []byte, atEOF bool) (int, int, error) {
 		if c.state == betweenFields {
 			err := c.finish(dst)
 			if err != nil {
-				//log.Println("[ ] We're returning ", c.dstpos, i+1, err)
 				return c.dstpos, i + 1, err
 			}
 		}
@@ -203,15 +199,12 @@ func (c *CSVCleaner) Transform(dst, src []byte, atEOF bool) (int, int, error) {
 		}
 		err = c.finish(dst)
 		if err != nil {
-			//log.Println("[ ] We're returning ", c.dstpos, len(src), err)
 			return c.dstpos, len(src), err
 		}
 	}
 	if c.dstpos == 0 && len(src) != 0 {
-		//log.Println("[ ] We're returning ", c.dstpos, len(src), transform.ErrShortSrc)
 		return 0, len(src), transform.ErrShortSrc
 	}
-	//log.Println("[ ] We're returning ", c.dstpos, len(src), nil)
 	return c.dstpos, len(src), nil
 }
 
