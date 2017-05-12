@@ -17,10 +17,17 @@ A general description of the RFC 4180 format is:
 
 This tool will correct the following errors in a range of conditions (including fields with newlines):
 
-`unquoted field, with a " inside` -> `unquoted field," with a "" inside"`
-`unquoted field,with a badly escpaed \" inside` -> `unquoted field,"with a badly escaped "" inside"`
-`quoted field," with an unescaped " inside"` -> `quoted field," with an unescaped "" inside"`
-`quoted field,"with a badly escpaed \" inside"` -> `quoted field,"with a badly escaped "" inside"`
+    from: unquoted field, with a " inside
+      to: unquoted field," with a "" inside"
+
+    from: unquoted field,with a badly escpaed \" inside
+      to: unquoted field,"with a badly escaped "" inside"
+
+    from: quoted field," with an unescaped " inside"
+      to: quoted field," with an unescaped "" inside"
+
+    from: quoted field,"with a badly escpaed \" inside"
+      to: quoted field,"with a badly escaped "" inside"
 
 It is unable to correct unquoted fields that erroneously start with a `"`.
 
