@@ -98,23 +98,26 @@ func (c *CSVCleaner) correct(b byte) {
 
 // Transform transforms the incoming byte slice into the output slice.
 // It fulfils the contract described on transform.Transformer.
-func (c *CSVCleaner) Transform(dst, src []byte, atEOF bool) (int, int, error) {
+func (c *CSVCleaner) Transform(dst, src []byte, atEOF bool) (written int, consumed int, err error) {
 	c.dstpos = 0
+	consumed = 0
 
-	//log.Println("[ ] At transform ", len(dst), len(src), atEOF)
-	if c.state == uninitalised {
+	defer func() {
+		written = c.dstpos
+	}()
+
+	switch c.state {
+	case uninitalised:
 		c.startBuf()
 		c.state = betweenFields
-	}
-	if c.state == writingBuffer {
-		err := c.finish(dst)
+	case writingBuffer:
+		err = c.finish(dst)
 		if err != nil {
-			//log.Println("[ ] We're returning ", c.dstpos, 0, err)
-			return c.dstpos, 0, err
+			return
 		}
 	}
 
-	for i, b := range src {
+	for _,b := range src {
 		switch c.state {
 		case betweenFields:
 			if b == '"' {
@@ -178,15 +181,15 @@ func (c *CSVCleaner) Transform(dst, src []byte, atEOF bool) (int, int, error) {
 			}
 		}
 		c.add(b)
+		consumed++
 
 		if c.state == betweenFields {
-			err := c.finish(dst)
+			err = c.finish(dst)
 			if err != nil {
-				return c.dstpos, i + 1, err
+				return
 			}
 		}
 	}
-	var err error
 	if atEOF {
 		if c.addQuote {
 			switch c.state {
@@ -199,13 +202,14 @@ func (c *CSVCleaner) Transform(dst, src []byte, atEOF bool) (int, int, error) {
 		}
 		err = c.finish(dst)
 		if err != nil {
-			return c.dstpos, len(src), err
+			return
 		}
 	}
 	if c.dstpos == 0 && len(src) != 0 {
-		return 0, len(src), transform.ErrShortSrc
+		err = transform.ErrShortSrc
+		return
 	}
-	return c.dstpos, len(src), nil
+	return
 }
 
 // Reset resets the state and allows a Transformer to be reused.
