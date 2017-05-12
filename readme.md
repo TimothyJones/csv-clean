@@ -42,3 +42,6 @@ This tool will correct the following errors in a range of conditions (including 
 
 It is unable to correct unquoted fields that erroneously start with a `"`.
 
+## See also
+
+For an easy way to check that the input matches RFC-4180, see [csv-check](https://github.com/TimothyJones/csv-check)
