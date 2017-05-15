@@ -111,6 +111,17 @@ func (c *CSVCleaner) Transform(dst, src []byte, atEOF bool) (written int, consum
 	consumed = 0
 
 	defer func() {
+		if err == nil {
+			if c.bufpos != 0 {
+				// If we've still got data in the buffer it's because
+				// we might not have read a whole record
+				err = transform.ErrShortSrc
+			} else if consumed == 0 && len(src) != 0 {
+				// If we didn't read any available input, it's because
+				// we're still writing out data
+				err = transform.ErrShortDst
+			}
+		}
 		written = c.dstpos
 	}()
 
@@ -202,23 +213,15 @@ func (c *CSVCleaner) Transform(dst, src []byte, atEOF bool) (written int, consum
 	}
 	if atEOF {
 		if c.addQuote {
+			c.add('"')
 			switch c.state {
-			case inQuoted:
-				c.add('"')
 			case inQuotedEnding:
-				c.add('"')
 				c.add('"')
 			}
 		}
 		err = c.finish(dst)
-		if err != nil {
-			return
-		}
 	}
-	if c.dstpos == 0 && len(src) != 0 {
-		err = transform.ErrShortSrc
-		return
-	}
+
 	return
 }
 
