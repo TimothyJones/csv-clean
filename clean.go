@@ -7,8 +7,15 @@ import (
 )
 
 // Clean corrects the CSV provided by the reader to RFC-4180 format
-func Clean(r io.Reader, w io.Writer) error {
-	reader := transform.NewReader(bufio.NewReader(r), NewCleaner())
+func Clean(r io.Reader, w io.Writer, config *CleanConfig) error {
+	reader := transform.NewReader(bufio.NewReader(r), NewCleaner(config))
+	_, err := io.Copy(w, reader)
+
+	return err
+}
+
+func DefaultClean(r io.Reader, w io.Writer) error {
+	reader := transform.NewReader(bufio.NewReader(r), NewCleaner(&CleanConfig{true}))
 	_, err := io.Copy(w, reader)
 
 	return err
@@ -17,7 +24,7 @@ func Clean(r io.Reader, w io.Writer) error {
 type state int
 
 const (
-	uninitalised = iota
+	uninitalised state = iota
 	betweenFields
 	inUnquoted
 	inQuoted
@@ -28,6 +35,7 @@ const (
 
 // CSVCleaner is a transformer that cleans up CSV file into RFC-4180 format
 type CSVCleaner struct {
+	config                          *CleanConfig
 	state                           state
 	buf                             []byte
 	bufpos, dstpos, keepWritingFrom int
@@ -35,8 +43,8 @@ type CSVCleaner struct {
 }
 
 // NewCleaner returns a new CSVCleaner
-func NewCleaner() *CSVCleaner {
-	return &CSVCleaner{}
+func NewCleaner(config *CleanConfig) *CSVCleaner {
+	return &CSVCleaner{config, uninitalised, nil, 0, 0, 0, false}
 }
 
 func (c *CSVCleaner) startBuf() {
@@ -117,7 +125,7 @@ func (c *CSVCleaner) Transform(dst, src []byte, atEOF bool) (written int, consum
 		}
 	}
 
-	for _,b := range src {
+	for _, b := range src {
 		switch c.state {
 		case betweenFields:
 			if b == '"' {
@@ -130,7 +138,9 @@ func (c *CSVCleaner) Transform(dst, src []byte, atEOF bool) (written int, consum
 			case '"':
 				c.state = inQuotedEnding
 			case '\\':
-				c.state = inQuotedFoundSlash
+				if c.config.correctSlashedQuotes {
+					c.state = inQuotedFoundSlash
+				}
 			case ',':
 				if c.addQuote {
 					// we saw a terminating comma when we added a quote due to unescaped quoting
@@ -159,8 +169,8 @@ func (c *CSVCleaner) Transform(dst, src []byte, atEOF bool) (written int, consum
 			case '"':
 				// saw a badly escaped double quote
 				c.correct('"')
-				c.state = inQuoted
 			}
+			c.state = inQuoted
 		case inQuotedEnding:
 			switch b {
 			case '"':

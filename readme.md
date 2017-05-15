@@ -12,6 +12,7 @@ It reads from standard input and writes to standard output
 Usage: 
 
     cat <malformed.csv> | csv-clean > <clean.csv>
+    cat <malformed.csv> | csv-clean -fixSlashedQuotes=false > <clean.csv>
 
 Installation:
 
@@ -41,6 +42,8 @@ This tool will correct the following errors in a range of conditions (including 
       to: quoted field,"with a badly escaped "" inside"
 
 It is unable to correct unquoted fields that erroneously start with a `"`.
+
+You can disable the correction of `\"` to `""` with `-fixSlashedQuotes=false`
 
 ## See also
 
