@@ -4,6 +4,8 @@ csv-clean
 `csv-clean` is a short command line tool to take a malformed csv file, and convert it to
 [RFC 4180](https://www.ietf.org/rfc/rfc4180.txt) format.
 
+[![Build Status](https://travis-ci.org/TimothyJones/csv-clean.svg?branch=master)](https://travis-ci.org/TimothyJones/csv-clean)
+
 It assumes the input is UTF-8 and lines are terminated with `\n` characters. 
 Behaviour on non-UTF-8 input is undefined.
 
