@@ -1,11 +1,9 @@
 package main
 
 import (
-	//	"bytes"
+	"bytes"
 	"golang.org/x/text/transform"
 	"os"
-	//	"strings"
-	"bytes"
 	"strings"
 	"testing"
 )

@@ -18,6 +18,5 @@ func main() {
 		correctSlashedQuotes: *correctSlashedQuotes,
 	}
 
-
-	Clean(os.Stdin, os.Stdout,config)
+	Clean(os.Stdin, os.Stdout, config)
 }
