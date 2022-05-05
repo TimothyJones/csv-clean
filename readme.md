@@ -18,7 +18,7 @@ Usage:
 
 Installation:
 
-    go get github.com/TimothyJones/csv-check
+    go get github.com/TimothyJones/csv-clean
 
 
 A general description of the RFC 4180 format is:
